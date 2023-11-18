@@ -64,7 +64,13 @@ export async function whtGet(req, res) {
     }
 
     const configurations = await fetchByAPIKey(apiKey);
-    const isBotInServer = client.guilds.cache.has(configurations.server_id);
+
+    if (configurations.length == 0) {
+        res.send({});
+        return;
+    }
+
+    const isBotInServer = client.guilds.cache.has(configurations[0].server_id);
     const channelIDs = configurations.channels;
 
     if (!isBotInServer) {
@@ -172,14 +178,19 @@ async function moveUserToVoice(robloxId, targetFrequency, apiKey) {
     const guild = client.guilds.cache.get(guildId);
 
     const configurations = await fetchByAPIKey(apiKey);
-    const isBotInServer = client.guilds.cache.has(configurations.server_id);
-    const channelIDs = configurations.channels;
+
+    if (configurations.length == 0) {
+        return 4;
+    }
+
+    const isBotInServer = client.guilds.cache.has(configurations[0].server_id);
+    const channelIDs = configurations[0].channels;
 
     if (!isBotInServer) {
         return 4;
     }
 
-    const server = client.guilds.cache.get(configurations.server_id);
+    const server = client.guilds.cache.get(configurations[0].server_id);
     const channelsList = channelIDs.map((id) => server.channels.cache.get(id));
 
     let ids = channelsList.filter((ch) => ch != null && ch != undefined).map((ch) => ch.id);

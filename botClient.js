@@ -29,11 +29,18 @@ const client = new Client({
 client.once(Events.ClientReady, async c => {
   console.log(`Ready! Logged in as ${c.user.tag}`);
 
+  const guilds = await client.guilds.fetch();
+
+  guilds.forEach(guild => {
+    console.log(`Guild ${guild.name}`);
+  });
+
 
   await client.guilds.cache.forEach(async guild => {
     console.log(`Fetching members for  ${guild.name}`);
     try {
       await guild.members.fetch();
+      await guild.channels.fetch();
       console.log(`Fetched members for guild: ${guild.name}`);
     } catch (error) {
       console.error(`Failed to fetch members for guild: ${guild.name}`);
