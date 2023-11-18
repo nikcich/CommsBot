@@ -71,14 +71,14 @@ export async function whtGet(req, res) {
     }
 
     const isBotInServer = client.guilds.cache.has(configurations[0].server_id);
-    const channelIDs = configurations.channels;
+    const channelIDs = configurations[0].channels;
 
     if (!isBotInServer) {
         res.send({});
         return;
     }
 
-    const server = client.guilds.cache.get(configurations.server_id);
+    const server = client.guilds.cache.get(configurations[0].server_id);
     const channelsList = channelIDs.map((id) => server.channels.cache.get(id));
 
     let chs = channelsList.filter((ch) => ch != null && ch != undefined).map((ch) => ch.name);
