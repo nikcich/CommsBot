@@ -123,7 +123,7 @@ async function handleSetupInteraction(interaction) {
       user_id: String(interaction.user.id),
       server_id: String(interaction.guild.id),
       lobby_id: String(lobbyId),
-      channels: [...channelOptions.map((c) => String(c.value))]
+      channels: [...channelOptions.map((c) => String(c.value)), String(lobbyId)]
     });
 
     await interaction.editReply({

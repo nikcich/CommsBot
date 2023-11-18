@@ -175,8 +175,6 @@ async function moveUserToVoice(robloxId, targetFrequency, apiKey) {
     const targetUserId = "382692599934484490";
     let targetChannel = null;
 
-    const guild = client.guilds.cache.get(guildId);
-
     const configurations = await fetchByAPIKey(apiKey);
 
     if (configurations.length == 0) {
@@ -186,10 +184,12 @@ async function moveUserToVoice(robloxId, targetFrequency, apiKey) {
     const isBotInServer = client.guilds.cache.has(configurations[0].server_id);
     const channelIDs = configurations[0].channels;
 
+
     if (!isBotInServer) {
         return 4;
     }
 
+    const guild = client.guilds.cache.get(configurations[0].server_id);
     const server = client.guilds.cache.get(configurations[0].server_id);
     const channelsList = channelIDs.map((id) => server.channels.cache.get(id));
 
