@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { client } from './botClient.js';
+import { fetchByAPIKey } from './DBInterface.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,14 +19,27 @@ const redirect_uri = process.env.REDIRECT_URI;
 const guildId = process.env.GUILD_ID;
 const lobbyId = process.env.LOBBY_CHANNEL;
 const freqIds = process.env.FREQUENCIES_ID;
-const freqChs = process.env.FREQUENCIES_CH;
 
 const successPath = path.resolve(__dirname, 'public', 'JoinedSuccessfully.html');
 const alreadyMemberPath = path.resolve(__dirname, 'public', 'AlreadyMember.html');
 const errorPath = path.resolve(__dirname, 'public', 'FailedToJoin.html');
 
+function getAPIKey(req) {
+    let k = req.query.key;
+    if (!k) {
+        k = null;
+    }
 
-export async function whtPost(req, res){
+    return k;
+}
+
+export async function whtPost(req, res) {
+    const apiKey = getAPIKey(req);
+    if (apiKey == null) {
+        res.send({ code: 2 });
+        return;
+    }
+
     console.log("received", req.body);
 
     let data = req.body;
@@ -33,7 +47,7 @@ export async function whtPost(req, res){
     const robloxId = data.user;
 
     try {
-        let moveResult = await moveUserToVoice(robloxId, targetFreq);
+        let moveResult = await moveUserToVoice(robloxId, targetFreq, apiKey);
 
         res.send({ code: moveResult });
     } catch (e) {
@@ -42,14 +56,32 @@ export async function whtPost(req, res){
     }
 }
 
-export async function whtGet(req,res){
-    const chs = freqChs.split(",");
-    let mp = {};
-  
-    for (let ch of chs) {
-      mp[ch] = true;
+export async function whtGet(req, res) {
+    const apiKey = getAPIKey(req);
+    if (apiKey == null) {
+        res.send({});
+        return;
     }
-  
+
+    const configurations = await fetchByAPIKey(apiKey);
+    const isBotInServer = client.guilds.cache.has(configurations.server_id);
+    const channelIDs = configurations.channels;
+
+    if (!isBotInServer) {
+        res.send({});
+        return;
+    }
+
+    const server = client.guilds.cache.get(configurations.server_id);
+    const channelsList = channelIDs.map((id) => server.channels.cache.get(id));
+
+    let chs = channelsList.filter((ch) => ch != null && ch != undefined).map((ch) => ch.name);
+    let mp = {};
+
+    for (let ch of chs) {
+        mp[ch] = true;
+    }
+
     res.send(mp);
 }
 
@@ -131,15 +163,27 @@ async function addUserToServer(userId, accessToken) {
     return response;
 }
 
-async function moveUserToVoice(robloxId, targetFrequency) {
+async function moveUserToVoice(robloxId, targetFrequency, apiKey) {
 
     // TODO: Get discord ID from roblox ID
     const targetUserId = "382692599934484490";
     let targetChannel = null;
 
     const guild = client.guilds.cache.get(guildId);
-    const ids = freqIds.split(",");
-    const chs = freqChs.split(",");
+
+    const configurations = await fetchByAPIKey(apiKey);
+    const isBotInServer = client.guilds.cache.has(configurations.server_id);
+    const channelIDs = configurations.channels;
+
+    if (!isBotInServer) {
+        return 4;
+    }
+
+    const server = client.guilds.cache.get(configurations.server_id);
+    const channelsList = channelIDs.map((id) => server.channels.cache.get(id));
+
+    let ids = channelsList.filter((ch) => ch != null && ch != undefined).map((ch) => ch.id);
+    let chs = channelsList.filter((ch) => ch != null && ch != undefined).map((ch) => ch.name);
 
     for (let i in chs) {
         let ch = chs[i];
@@ -162,10 +206,10 @@ async function moveUserToVoice(robloxId, targetFrequency) {
     voiceChannels.forEach(voiceChannel => {
         const members = voiceChannel.members.forEach(member => {
             if (member.user.id == targetUserId) {
-                try{
+                try {
                     member.voice.setChannel(targetChannel);
                     moved = true;
-                }catch(e){
+                } catch (e) {
                     console.log(e);
                     moved = false
                 }

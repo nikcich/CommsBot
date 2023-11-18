@@ -1,6 +1,9 @@
-import { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder } from 'discord.js';
+import {
+    ActionRowBuilder, StringSelectMenuBuilder,
+    StringSelectMenuOptionBuilder, SlashCommandBuilder
+} from 'discord.js';
 
-function buildSelectMenu(options){
+function buildSelectMenu(options) {
     let optionsList = options.map((option) => {
         return new StringSelectMenuOptionBuilder()
             .setLabel(option.label)
@@ -8,12 +11,12 @@ function buildSelectMenu(options){
             .setValue(option.value)
     });
 
-   return new StringSelectMenuBuilder()
-    .setMinValue(1)
-    .setMaxValue(2)
-    .setCustomId('starter')
-    .setPlaceholder('Make a selection!')
-    .addOptions(optionsList);
+    return new StringSelectMenuBuilder()
+        .setMinValues(1)
+        .setMaxValues(options.length > 10 ? 10 : options.length)
+        .setCustomId('starter')
+        .setPlaceholder('Make a selection!')
+        .addOptions(optionsList);
 }
 
 export default buildSelectMenu;
