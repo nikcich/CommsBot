@@ -22,11 +22,23 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers
   ]
 });
 
-client.once(Events.ClientReady, c => {
+client.once(Events.ClientReady, async c => {
   console.log(`Ready! Logged in as ${c.user.tag}`);
+
+
+  await client.guilds.cache.forEach(async guild => {
+    console.log(`Fetching members for  ${guild.name}`);
+    try {
+      await guild.members.fetch();
+      console.log(`Fetched members for guild: ${guild.name}`);
+    } catch (error) {
+      console.error(`Failed to fetch members for guild: ${guild.name}`);
+    }
+  });
 });
 
 async function handleSetupInteraction(interaction) {
