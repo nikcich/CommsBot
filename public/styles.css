@@ -1,0 +1,11 @@
+body {
+    background: #23262E;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    /* Set the height to fill the viewport */
+    overflow: hidden;
+    /* Prevent overflow */
+}
