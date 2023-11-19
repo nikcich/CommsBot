@@ -310,6 +310,11 @@ client.on('interactionCreate', async (interaction) => {
     return;
   }
 
+  try {
+    await interaction.guild.members.fetch();
+    await interaction.guild.channels.fetch();
+  } catch (error) { }
+
   if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
     await interaction.reply("You must be an administrator to use this bot.");
     return;
